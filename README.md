@@ -1,143 +1,191 @@
-# 📚 API Perpustakaan — Sistem Peminjaman Buku
+# Responsi Modul 1 — REST API Peminjaman Buku Perpustakaan
 
-REST API untuk manajemen peminjaman buku perpustakaan menggunakan **Node.js**, **Express.js**, dan **Supabase**.
+Ini adalah project REST API sederhana buat sistem peminjaman buku perpustakaan. Dibuat pakai **Node.js**, **Express.js**, dan **Supabase** sebagai database-nya.
 
 ---
 
-## 🚀 Cara Menjalankan
+## Teknologi yang Dipakai
 
-### 1. Install Dependensi
+- **Node.js** — runtime JavaScript
+- **Express.js** — framework buat bikin REST API-nya
+- **Supabase** — database berbasis PostgreSQL (cloud, gratis)
+- **dotenv** — buat baca file `.env`
+- **cors** — biar API bisa diakses dari mana aja
+
+---
+
+## Cara Pakai
+
+### 1. Clone & Install
+
 ```bash
 npm install
 ```
 
-### 2. Konfigurasi Environment
-Salin file `.env.example` menjadi `.env` lalu isi dengan kredensial Supabase Anda:
+### 2. Setting Environment
+
+Bikin file `.env` di root folder (sejajar sama `index.js`), isinya:
+
 ```env
-SUPABASE_URL=https://your-project-ref.supabase.co
-SUPABASE_ANON_KEY=your-anon-key-here
+SUPABASE_URL=https://xxxxxxxxxx.supabase.co
+SUPABASE_ANON_KEY=isi_dengan_anon_key_kamu
 PORT=3000
 ```
 
-### 3. Setup Database Supabase
-Buka **SQL Editor** di dashboard Supabase, lalu jalankan seluruh isi file `database/schema.sql`.
+Nilai `SUPABASE_URL` dan `SUPABASE_ANON_KEY` bisa didapet dari dashboard Supabase → **Project Settings** → **API**.
+
+### 3. Setup Database
+
+Buka **SQL Editor** di Supabase, copy-paste semua isi file `database/schema.sql`, terus klik **Run**. Ini bakal otomatis bikin 3 tabel plus data contohnya.
 
 ### 4. Jalankan Server
+
 ```bash
-npm start       # Mode produksi
-npm run dev     # Mode development (auto-restart)
+npm run dev
 ```
 
-Server berjalan di: `http://localhost:3000`
+Kalau berhasil bakal muncul:
+
+```
+📚 API Perpustakaan berjalan di: http://localhost:3000
+```
 
 ---
 
-## Struktur Proyek
+## Struktur Folder
 
 ```
-├── index.js                    # Entry point aplikasi
+├── index.js                        # file utama, server jalan dari sini
 ├── src/
 │   ├── config/
-│   │   └── supabase.js         # Konfigurasi Supabase client
+│   │   └── supabase.js             # koneksi ke Supabase
 │   ├── controllers/
-│   │   └── loanController.js   # Logic CRUD peminjaman
+│   │   └── loanController.js       # logika CRUD peminjaman
 │   └── routes/
-│       └── loanRoutes.js       # Definisi endpoint
+│       └── loanRoutes.js           # daftar endpoint
 ├── database/
-│   └── schema.sql              # Skema + data contoh Supabase
-└── .env.example
+│   └── schema.sql                  # SQL buat bikin tabel di Supabase
+└── .env.example                    # contoh isi file .env
 ```
 
 ---
 
-## Skema Database
+## Struktur Database
 
-### Tabel `anggota`
+Ada 3 tabel yang dipakai:
+
+**`anggota`** — data anggota perpustakaan
+
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
-| id | BIGSERIAL | Primary Key |
-| nama | VARCHAR(100) | Nama lengkap |
-| email | VARCHAR(150) | Email unik |
-| no_telepon | VARCHAR(20) | Nomor telepon |
+| id | BIGSERIAL | Primary key |
+| nama | VARCHAR | Nama lengkap anggota |
+| email | VARCHAR | Email (unik) |
+| no_telepon | VARCHAR | Nomor HP |
+| alamat | TEXT | Alamat lengkap |
 
-### Tabel `buku`
+**`buku`** — data koleksi buku
+
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
-| id | BIGSERIAL | Primary Key |
-| judul | VARCHAR(200) | Judul buku |
-| pengarang | VARCHAR(150) | Nama pengarang |
-| isbn | VARCHAR(20) | ISBN unik |
-| stok_tersedia | INT | Stok yang bisa dipinjam |
+| id | BIGSERIAL | Primary key |
+| judul | VARCHAR | Judul buku |
+| pengarang | VARCHAR | Nama pengarang |
+| isbn | VARCHAR | Kode ISBN (unik) |
+| stok_total | INT | Total buku yang dimiliki |
+| stok_tersedia | INT | Buku yang masih bisa dipinjam |
 
-### Tabel `peminjaman`
+**`peminjaman`** — data transaksi pinjam buku
+
 | Kolom | Tipe | Keterangan |
 |-------|------|------------|
-| id | BIGSERIAL | Primary Key |
-| anggota_id | BIGINT | FK → anggota |
-| buku_id | BIGINT | FK → buku |
-| tanggal_pinjam | DATE | Tanggal dipinjam |
-| tanggal_jatuh_tempo | DATE | Batas kembali |
-| tanggal_kembali | DATE | Tanggal dikembalikan |
+| id | BIGSERIAL | Primary key |
+| anggota_id | BIGINT | Relasi ke tabel anggota |
+| buku_id | BIGINT | Relasi ke tabel buku |
+| tanggal_pinjam | DATE | Kapan buku dipinjam |
+| tanggal_jatuh_tempo | DATE | Batas waktu pengembalian |
+| tanggal_kembali | DATE | Kapan buku dikembalikan (nullable) |
 | status | VARCHAR | `Dipinjam` / `Dikembalikan` / `Terlambat` |
-| denda | INT | Denda Rupiah (Rp1.000/hari terlambat) |
+| denda | INT | Denda keterlambatan (Rp1.000/hari) |
+| catatan | TEXT | Catatan tambahan (opsional) |
 
 ---
 
-## Dokumentasi Endpoint
+## Endpoint API
 
-### `GET /loans` — Ambil semua peminjaman
-Mendukung filter query parameter:
+Base URL: `http://localhost:3000`
 
-| Parameter | Contoh |
-|-----------|--------|
-| `status` | `?status=Terlambat` |
-| `anggota_id` | `?anggota_id=1` |
-| `buku_id` | `?buku_id=2` |
-| `tanggal_pinjam` | `?tanggal_pinjam=2025-09-01` |
+### GET `/loans`
+Ambil semua data peminjaman. Bisa difilter pakai query parameter.
 
-Contoh:
+**Contoh penggunaan:**
 ```
-GET /loans?status=Terlambat
-GET /loans?status=Dipinjam&anggota_id=1
+GET /loans                              → semua data
+GET /loans?status=Terlambat            → yang telat
+GET /loans?status=Dipinjam             → yang lagi dipinjam
+GET /loans?anggota_id=1                → punya anggota tertentu
+GET /loans?buku_id=2&status=Dipinjam   → buku tertentu yang dipinjam
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "Data peminjaman berhasil diambil",
+  "total": 2,
+  "data": [ ... ]
+}
 ```
 
 ---
 
-### `GET /loans/:id` — Detail peminjaman
+### GET `/loans/:id`
+Ambil detail satu data peminjaman berdasarkan ID.
+
 ```
-GET /loans/2
+GET /loans/1
 ```
 
 ---
 
-### `POST /loans` — Buat peminjaman baru
+### POST `/loans`
+Buat data peminjaman baru.
+
+**Body (JSON):**
 ```json
 {
   "anggota_id": 1,
   "buku_id": 3,
-  "tanggal_pinjam": "2025-10-01",
-  "tanggal_jatuh_tempo": "2025-10-15",
-  "catatan": "Opsional"
+  "tanggal_pinjam": "2025-10-07",
+  "tanggal_jatuh_tempo": "2025-10-21",
+  "catatan": "opsional, boleh dikosongkan"
 }
 ```
-> Stok buku otomatis berkurang 1.
+
+> Stok buku otomatis berkurang 1 waktu peminjaman berhasil dibuat.
 
 ---
 
-### `PUT /loans/:id` — Update / catat pengembalian
+### PUT `/loans/:id`
+Update data peminjaman — biasanya dipakai buat mencatat pengembalian buku.
+
+**Body (JSON):**
 ```json
 {
-  "tanggal_kembali": "2025-10-20"
+  "tanggal_kembali": "2025-10-25"
 }
 ```
-> **Logika otomatis:**
-> - Kembali tepat waktu → status `Dikembalikan`, denda `0`
-> - Kembali terlambat → status `Terlambat`, denda `Rp1.000 × hari terlambat`
-> - Stok buku otomatis bertambah 1.
+
+> Sistem otomatis ngitung:
+> - Kalau balik tepat waktu → status `Dikembalikan`, denda `0`
+> - Kalau telat → status `Terlambat`, denda dihitung `Rp1.000 × jumlah hari telat`
+> - Stok buku otomatis bertambah 1 lagi
 
 ---
 
-### `DELETE /loans/:id` — Hapus peminjaman
+### DELETE `/loans/:id`
+Hapus data peminjaman.
+
 ```
 DELETE /loans/5
 ```
@@ -146,20 +194,36 @@ DELETE /loans/5
 
 ## Format Response
 
-**Sukses:**
+Semua response punya format yang sama:
+
 ```json
-{ "success": true, "message": "...", "data": { ... } }
+{
+  "success": true,
+  "message": "pesan hasil operasi",
+  "data": { }
+}
 ```
 
-**Error:**
+Kalau error:
 ```json
-{ "success": false, "message": "Pesan error" }
+{
+  "success": false,
+  "message": "keterangan errornya"
+}
 ```
 
-| Kode | Keterangan |
-|------|------------|
-| 200 | OK |
-| 201 | Created |
-| 400 | Bad Request |
-| 404 | Not Found |
-| 500 | Server Error |
+| Kode | Artinya |
+|------|---------|
+| 200 | Berhasil |
+| 201 | Data berhasil dibuat |
+| 400 | Input tidak valid / ada field yang kurang |
+| 404 | Data tidak ditemukan |
+| 500 | Ada error di server |
+
+---
+
+## Catatan
+
+- File `.env` **jangan di-push ke GitHub** — sudah dimasukin ke `.gitignore`
+- Kalau mau jalankan ulang setelah install ulang dependensi, tinggal `npm install` lagi
+- Data contoh sudah otomatis masuk waktu jalankan `schema.sql`
