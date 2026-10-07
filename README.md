@@ -227,3 +227,11 @@ Kalau error:
 - File `.env` **jangan di-push ke GitHub** — sudah dimasukin ke `.gitignore`
 - Kalau mau jalankan ulang setelah install ulang dependensi, tinggal `npm install` lagi
 - Data contoh sudah otomatis masuk waktu jalankan `schema.sql`
+
+---
+
+## Author
+
+**Gilang** — yang bikin projectnya
+
+> Kalau nama yang muncul di commit history itu **Jedan**, itu bukan orang lain ya — itu laptop punya temenku yang aku pinjam sementara karena laptop ku lagi rusak 😅
