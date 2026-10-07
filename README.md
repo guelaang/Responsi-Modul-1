@@ -232,6 +232,6 @@ Kalau error:
 
 ## Author
 
-**Gilang** — yang bikin projectnya
+**Gilang**
 
-> Kalau nama yang muncul di commit history itu **Jedan**, itu bukan orang lain ya — itu laptop punya temenku yang aku pinjam sementara karena laptop ku lagi rusak 😅
+> maaf mas kalau yang push ke Git namanya Jedan, soalnya laptop saya masih rusak mas, jadi emang laptop nya sharing gitu hehe
